@@ -52,7 +52,6 @@ with app.app_context():
         admin.set_password(os.getenv('ADMIN_PASSWORD', 'admin'))
         db.session.add(admin)
         db.session.commit()
-        print("✓ Admin user created")
     
     if Department.query.count() == 0:
         departments = [
@@ -65,7 +64,6 @@ with app.app_context():
         ]
         db.session.add_all(departments)
         db.session.commit()
-        print("✓ Departments seeded")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
