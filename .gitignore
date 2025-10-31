@@ -1,10 +1,43 @@
-# Ignore Python cache files
-**/__pycache__/
-**/*.pyc
+# --- Python / Flask ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+instance/
+.env
 
-# Ignore node_modules (VueJS frontend)
+# Virtual environments
+venv/
+.env/
+env/
+ENV/
+
+# Flask cache / Celery / Logs
+*.log
+*.pid
+celerybeat-schedule
+celerybeat.pid
+
+# --- Node / Vue.js ---
 frontend/node_modules/
-
-# Optional: ignore build/dist folders
 frontend/dist/
-backend/*.pyc
+frontend/.vscode/
+frontend/.env
+frontend/.DS_Store
+
+# --- System files ---
+.DS_Store
+Thumbs.db
+
+# --- IDE & Editor ---
+.vscode/
+.idea/
+*.code-workspace
+
+# --- Build / Output ---
+/build/
+/dist/
+/__pycache__/
+/*.egg-info/
