@@ -3,6 +3,7 @@ from flask_mail import Mail
 from flask_caching import Cache
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 
 load_dotenv()
 
@@ -21,26 +22,28 @@ app.config['MAIL_DEFAULT_SENDER'] = ('Hospital', app.config['MAIL_USERNAME'])
 
 app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 app.config['CELERY_RESULT_BACKEND'] = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+app.config['CELERY_INCLUDE'] = ['tasks.celery_tasks']
 
 app.config['CACHE_TYPE'] = 'RedisCache'
 app.config['CACHE_REDIS_URL'] = os.getenv('CACHE_REDIS_URL', 'redis://localhost:6379/1')
 app.config['CACHE_DEFAULT_TIMEOUT'] = 300
 
+CORS(app, supports_credentials=True, origins=['http://localhost:3000'])
+
 mail = Mail(app)
 cache = Cache(app)
 
-from backend.models.database import db, Patient, Department
+from models.database import db, Patient, Department
 db.init_app(app)
 
-from backend.tasks.celery_tasks import make_celery
+from tasks.celery_tasks import make_celery
 celery = make_celery(app)
 
-from backend.routes.routes import routes
+from routes.routes import routes
 app.register_blueprint(routes)
 
 with app.app_context():
     db.create_all()
-
     admin = Patient.query.filter_by(username='admin').first()
     if not admin:
         admin = Patient(

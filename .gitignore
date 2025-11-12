@@ -1,43 +1,30 @@
-# --- Python / Flask ---
+# backend
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite3
 instance/
+*.db
 .env
-
-# Virtual environments
-venv/
-.env/
-env/
-ENV/
-
-# Flask cache / Celery / Logs
 *.log
 *.pid
+dump.rdb
+
+# Celery
 celerybeat-schedule
+celerybeat-schedule.*
 celerybeat.pid
 
-# --- Node / Vue.js ---
+# frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vscode/
 frontend/.env
 frontend/.DS_Store
 
-# --- System files ---
-.DS_Store
-Thumbs.db
-
-# --- IDE & Editor ---
+# Other
 .vscode/
 .idea/
 *.code-workspace
-
-# --- Build / Output ---
-/build/
-/dist/
-/__pycache__/
-/*.egg-info/
+.DS_Store
+Thumbs.db

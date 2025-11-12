@@ -18,7 +18,6 @@ class Patient(db.Model):
     address = db.Column(db.String(256))
     gchat_webhook = db.Column(db.String(512), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
     appointments = db.relationship('Appointment', backref='patient', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
@@ -32,7 +31,6 @@ class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(32), nullable=False, unique=True)
     description = db.Column(db.String(256), nullable=False)
-
     doctors = db.relationship('Doctor', backref='department', lazy=True, cascade='all, delete-orphan')
     
 class Doctor(db.Model):
@@ -43,14 +41,11 @@ class Doctor(db.Model):
     password_hash = db.Column(db.String(512), nullable=False)
     email = db.Column(db.String(64))
     phone = db.Column(db.String(15))
-    specialization = db.Column(db.String(64))
     qualification = db.Column(db.String(128))
     experience_years = db.Column(db.Integer)
-    consultation_fee = db.Column(db.Float, default=0.0)
     
     department_id = db.Column(db.Integer, db.ForeignKey('department.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
     appointments = db.relationship('Appointment', backref='doctor', lazy=True, cascade='all, delete-orphan')
 
     def set_password(self, password):
@@ -66,12 +61,16 @@ class Appointment(db.Model):
     doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=False)
-    status = db.Column(db.String(32), nullable=False, default='booked')  #book/complete/cancell
+    status = db.Column(db.String(32), nullable=False, default='booked')
     reason = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
     treatment = db.relationship('Treatment', backref='appointment', uselist=False, cascade='all, delete-orphan')
+    
+    __table_args__ = (
+        db.UniqueConstraint('doctor_id', 'date', 'time', name='unique_appointment_slot'),
+        db.Index('idx_appointment_lookup', 'doctor_id', 'date', 'status'),
+    )
     
 class Treatment(db.Model):
     __tablename__ = 'treatment'
@@ -83,3 +82,20 @@ class Treatment(db.Model):
     follow_up_date = db.Column(db.Date)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class DoctorAvailability(db.Model):
+    __tablename__ = 'doctor_availability'
+    id = db.Column(db.Integer, primary_key=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    start_time = db.Column(db.Time, nullable=False)
+    end_time = db.Column(db.Time, nullable=False)
+    is_enabled = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint('doctor_id', 'date', 'start_time', 'end_time', name='unique_slot'),
+        db.Index('idx_availability_lookup', 'doctor_id', 'date', 'is_enabled'),
+    )
+    
