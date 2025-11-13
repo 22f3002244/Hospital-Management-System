@@ -1,0 +1,33 @@
+npm run dev
+python app.py
+redis-server
+celery -A app.celery worker --loglevel=info -P solo
+celery -A app.celery beat --loglevel=info
+
+force send:
+celery -A app.celery call tasks.daily_reminder
+celery -A app.celery call tasks.send_appointment_confirmed --args="[1]"    #appointment id
+celery -A app.celery call tasks.send_appointment_cancelled --args="[1, 'Doctor unavailable']"
+celery -A app.celery call tasks.monthly_doctor_report
+celery -A app.celery call tasks.export_patient_treatments --args="[1]"   #patient id
+celery -A app.celery call tasks.send_appointment_record_pdf --args="[1]"    #appointment id
+
+task status:
+celery -A app.celery inspect registered
+celery -A app.celery inspect active
+celery -A app.celery inspect scheduled
+celery -A app.celery inspect stats
+celery -A app.celery events
+celery -A app.celery purge  #remove all
+
+monitor task:
+celery -A app.celery flower   #localhost:5555 #pip install flower
+
+checksum code:
+#check.py
+import checksumdir 
+hash = checksumdir.dirhash("folder-path")
+print("Directory Checksum:", hash)
+
+redis if runnning in background:
+netstat -ano | findstr :6379

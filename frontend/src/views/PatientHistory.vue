@@ -17,7 +17,14 @@
       <div v-else-if="error" class="alert alert-danger" role="alert">
         <strong>Error:</strong> {{ error }}
       </div>
-
+      
+      <div class="text-end">
+        <button class="btn btn-success btn-sm mb-2" @click="exportHistory" :disabled="exporting">
+        <span v-if="exporting" class="spinner-border spinner-border-sm me-1"></span>
+        {{ exporting ? 'Exporting...' : 'Export to CSV' }}
+      </button>
+      </div>
+      
       <div v-if="emailStatus" class="alert mt-3" :class="emailStatus.type" role="alert">{{ emailStatus.message }}</div>
       <div v-else class="card border-dark">
         <div class="table-responsive">
@@ -51,7 +58,7 @@
                       @click="viewDetails(record.appointment_id)">
                       View Details
                     </button>
-                    <button v-else class="btn btn-sm btn-primary" @click="sendRecordByEmail(record.appointment_id)"
+                    <button v-else class="btn btn-sm btn-dark" @click="sendRecordByEmail(record.appointment_id)"
                       :disabled="sendingRecord === record.appointment_id">
                       <span v-if="sendingRecord === record.appointment_id"
                         class="spinner-border spinner-border-sm me-1"></span>
@@ -83,7 +90,6 @@ import axios from 'axios'
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-
 const API_BASE = 'http://localhost:5000'
 
 const patientId = ref(route.params.id)
@@ -98,6 +104,7 @@ const isLoading = ref(false)
 const error = ref(null)
 const sendingRecord = ref(null)
 const emailStatus = ref(null)
+const exporting = ref(false)
 
 const isDoctorOrAdmin = computed(() => {
   const role = authStore.user?.role
@@ -107,24 +114,18 @@ const isDoctorOrAdmin = computed(() => {
 async function loadPatientHistory() {
   isLoading.value = true
   error.value = null
-
   try {
     console.log('Loading history for patient:', patientId.value)
-
     const response = await axios.get(
       `${API_BASE}/patient/${patientId.value}/history`,
       { withCredentials: true }
     )
-
     console.log('History response:', response.data)
-
     patientInfo.value = response.data.patient
     history.value = response.data.history
-
   } catch (err) {
     console.error('Failed to load patient history:', err)
     console.error('Error details:', err.response)
-
     if (err.response?.status === 403) {
       error.value = 'You do not have permission to view this patient\'s history.'
     } else if (err.response?.status === 404) {
@@ -145,7 +146,6 @@ async function loadPatientHistory() {
 async function sendRecordByEmail(appointmentId) {
   sendingRecord.value = appointmentId
   emailStatus.value = null
-
   try {
     const response = await axios.post(
       `${API_BASE}/appointment/${appointmentId}/send-record`,
@@ -157,15 +157,11 @@ async function sendRecordByEmail(appointmentId) {
       type: 'alert-success',
       message: response.data.message || 'Medical record sent successfully to your email!'
     }
-
-    // Auto-hide success message after 5 seconds
     setTimeout(() => {
       emailStatus.value = null
-    }, 5000)
-
+    }, 2000)
   } catch (err) {
     console.error('Failed to send record:', err)
-
     emailStatus.value = {
       type: 'alert-danger',
       message: err.response?.data?.error || 'Failed to send medical record. Please try again.'
@@ -185,13 +181,29 @@ function formatDate(dateString) {
   })
 }
 
+async function exportHistory() {
+  exporting.value = true
+  try {
+    const response = await axios.post(
+      `http://localhost:5000/export-patient/${patientId.value}`,
+      {},
+      { withCredentials: true }
+    )
+    alert('We have mailed you the CSV file!.')
+  } catch (error) {
+    console.error('Export failed:', error)
+    alert('Failed to export history: ' + (error.response?.data?.error || error.message))
+  } finally {
+    exporting.value = false
+  }
+}
+
 async function viewDetails(appointmentId) {
   try {
     const response = await axios.get(
       `${API_BASE}/appointment/${appointmentId}/details`,
       { withCredentials: true }
     )
-
     const data = response.data
     let message = `
 Appointment ID: ${data.appointment_id}
