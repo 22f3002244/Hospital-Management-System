@@ -2,6 +2,9 @@
 
 A comprehensive full-stack hospital management system built with Vue.js 3 frontend and Flask backend, featuring role-based dashboards for administrators, doctors, and patients with automated notifications and reporting.
 
+<img width="1905" height="866" alt="look" src="https://github.com/user-attachments/assets/bbb643e3-8181-42f7-a452-696ec25813b6" />
+
+
 ## 🏥 Overview
 
 This Hospital Management System enables:
@@ -388,3 +391,7 @@ CACHE_REDIS_URL=redis://localhost:6379/1
 ---
 
 **Note:** This is a complete full-stack application. Ensure all services (Redis, Celery, Flask, Vite) are running for full functionality.
+
+## Author
+
+Vedant Konde - vedantkonde09@gmail.com
